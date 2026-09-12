@@ -27,7 +27,7 @@ public class QuestionController {
 	@Autowired
 	QuestionService qservice;
 	
-	@PostMapping("/addques")
+	@PostMapping("/addquestion")
 	public Question addques(@RequestBody Question ques) {
 		qservice.addques(ques);
 		
