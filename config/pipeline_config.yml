@@ -15,7 +15,7 @@ test_timeout_minutes: 15
 java_version: "21"
 
 # OpenAI model to use for all agents
-openai_model: "gpt-4o"
+openai_model: "gemini-2.5-flash"
 
 # Paths that trigger automatic escalation if touched.
 # Uses prefix matching against repo-relative file paths.
