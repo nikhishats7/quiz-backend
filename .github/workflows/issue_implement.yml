@@ -1,0 +1,103 @@
+name: Issue → Implement Pipeline
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+# Only one run per issue at a time
+concurrency:
+  group: issue-implement-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  # ── Guard: only proceed on "implement" label or "/retry" comment ──────────
+  gate:
+    name: Gate Check
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      trigger: ${{ steps.check.outputs.trigger }}
+      retry_comment: ${{ steps.check.outputs.retry_comment }}
+    steps:
+      - name: Determine trigger
+        id: check
+        run: |
+          EVENT="${{ github.event_name }}"
+          LABEL="${{ github.event.label.name }}"
+          COMMENT="${{ github.event.comment.body }}"
+
+          if [[ "$EVENT" == "issues" && "$LABEL" == "implement" ]]; then
+            echo "should_run=true"  >> $GITHUB_OUTPUT
+            echo "trigger=labeled"  >> $GITHUB_OUTPUT
+            echo "retry_comment="   >> $GITHUB_OUTPUT
+
+          elif [[ "$EVENT" == "issue_comment" && "$COMMENT" == /retry* ]]; then
+            echo "should_run=true"        >> $GITHUB_OUTPUT
+            echo "trigger=retry"          >> $GITHUB_OUTPUT
+            # Pass the full comment body so the orchestrator can use human feedback
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "retry_comment<<$EOF"    >> $GITHUB_OUTPUT
+            echo "$COMMENT"              >> $GITHUB_OUTPUT
+            echo "$EOF"                  >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "trigger=none"     >> $GITHUB_OUTPUT
+            echo "retry_comment="   >> $GITHUB_OUTPUT
+          fi
+
+  # ── Main pipeline ─────────────────────────────────────────────────────────
+  pipeline:
+    name: Run Pipeline
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # push ai/* branches
+      issues: write          # comment on issues
+      pull-requests: write   # open draft PRs
+      checks: write          # update Check Runs
+
+    steps:
+      # 1. Exchange GitHub App credentials for a short-lived token
+      - name: Generate GitHub App token
+        id: app_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      # 2. Checkout the TARGET repo using the bot token
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          repository: nikhishats7/quiz-backend
+          token: ${{ steps.app_token.outputs.token }}
+          fetch-depth: 0
+
+      # 4. Set up Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # 5. Install dependencies
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      # 6. Run orchestrator
+      - name: Run orchestrator
+        env:
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          TRIGGER: ${{ needs.gate.outputs.trigger }}
+          RETRY_COMMENT: ${{ needs.gate.outputs.retry_comment }}
+          REPO_OWNER: nikhishats7
+          REPO_NAME: quiz-backend
+          ORCHESTRATOR_REPO: ${{ github.repository }}
+        run: python .github/scripts/orchestrator.py

@@ -1,0 +1,124 @@
+name: Sandboxed Test Runner
+
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        description: "AI branch to test"
+        required: true
+        type: string
+      repo_owner:
+        description: "Target repo owner"
+        required: true
+        type: string
+      repo_name:
+        description: "Target repo name"
+        required: true
+        type: string
+    outputs:
+      passed:
+        description: "true if all tests passed"
+        value: ${{ jobs.test.outputs.passed }}
+      log_artifact_url:
+        description: "URL to the test log artifact"
+        value: ${{ jobs.test.outputs.log_artifact_url }}
+      tests_run:
+        description: "Total tests executed"
+        value: ${{ jobs.test.outputs.tests_run }}
+      tests_failed:
+        description: "Total tests failed"
+        value: ${{ jobs.test.outputs.tests_failed }}
+    secrets:
+      APP_ID:
+        required: true
+      APP_PRIVATE_KEY:
+        required: true
+      # NOTE: NO production secrets (DB passwords, API keys, etc.) are injected here.
+      # The test suite must be able to run with only the checked-out source code.
+
+jobs:
+  test:
+    name: Maven Test (Java 21)
+    runs-on: ubuntu-latest
+    # Hard timeout — prevents runaway AI-generated code from hanging indefinitely
+    timeout-minutes: 15
+    outputs:
+      passed: ${{ steps.result.outputs.passed }}
+      log_artifact_url: ${{ steps.result.outputs.log_artifact_url }}
+      tests_run: ${{ steps.parse.outputs.tests_run }}
+      tests_failed: ${{ steps.parse.outputs.tests_failed }}
+
+    steps:
+      - name: Generate GitHub App token
+        id: app_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout AI branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo_owner }}/${{ inputs.repo_name }}
+          ref: ${{ inputs.branch_name }}
+          token: ${{ steps.app_token.outputs.token }}
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Run Maven tests
+        id: mvn
+        # --batch-mode: no interactive prompts
+        # -Dsurefire.failIfNoSpecifiedTests=false: don't fail if no tests exist
+        # -Dspring.profiles.active=test: use test profile if defined
+        run: |
+          mvn test --batch-mode \
+              -Dspring.profiles.active=test \
+              -Dsurefire.failIfNoSpecifiedTests=false \
+              2>&1 | tee test-output.log
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Parse Surefire results
+        id: parse
+        run: |
+          TOTAL=0
+          FAILED=0
+          ERRORS=0
+          for f in target/surefire-reports/TEST-*.xml; do
+            if [ -f "$f" ]; then
+              t=$(grep -oP 'tests="\K[0-9]+' "$f" | head -1)
+              fa=$(grep -oP 'failures="\K[0-9]+' "$f" | head -1)
+              er=$(grep -oP 'errors="\K[0-9]+' "$f" | head -1)
+              TOTAL=$((TOTAL + ${t:-0}))
+              FAILED=$((FAILED + ${fa:-0} + ${er:-0}))
+            fi
+          done
+          echo "tests_run=$TOTAL"   >> $GITHUB_OUTPUT
+          echo "tests_failed=$FAILED" >> $GITHUB_OUTPUT
+
+      - name: Upload test logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-logs-${{ inputs.branch_name }}
+          path: |
+            test-output.log
+            target/surefire-reports/
+          retention-days: 14
+
+      - name: Set result outputs
+        id: result
+        run: |
+          EXIT="${{ steps.mvn.outputs.exit_code }}"
+          if [[ "$EXIT" == "0" ]]; then
+            echo "passed=true"  >> $GITHUB_OUTPUT
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+          echo "log_artifact_url=${{ steps.upload.outputs.artifact-url }}" >> $GITHUB_OUTPUT
