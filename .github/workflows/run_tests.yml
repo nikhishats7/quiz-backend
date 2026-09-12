@@ -1,7 +1,7 @@
 name: Sandboxed Test Runner
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       branch_name:
         description: "AI branch to test"
@@ -15,26 +15,7 @@ on:
         description: "Target repo name"
         required: true
         type: string
-    outputs:
-      passed:
-        description: "true if all tests passed"
-        value: ${{ jobs.test.outputs.passed }}
-      log_artifact_url:
-        description: "URL to the test log artifact"
-        value: ${{ jobs.test.outputs.log_artifact_url }}
-      tests_run:
-        description: "Total tests executed"
-        value: ${{ jobs.test.outputs.tests_run }}
-      tests_failed:
-        description: "Total tests failed"
-        value: ${{ jobs.test.outputs.tests_failed }}
-    secrets:
-      APP_ID:
-        required: true
-      APP_PRIVATE_KEY:
-        required: true
-      # NOTE: NO production secrets (DB passwords, API keys, etc.) are injected here.
-      # The test suite must be able to run with only the checked-out source code.
+
 
 jobs:
   test:
