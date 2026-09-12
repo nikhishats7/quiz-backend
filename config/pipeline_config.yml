@@ -1,0 +1,37 @@
+# Pipeline configuration for quiz-backend (nikhishats7/quiz-backend)
+# Edit these values to tune the pipeline behavior.
+
+# Maximum implement→test cycles before giving up and escalating.
+# Each /retry comment from a human resets this counter.
+retry_cap: 3
+
+# If the total lines changed (added + removed) exceeds this number,
+# the PR agent will automatically request a review from senior_reviewer.
+diff_size_threshold_lines: 500
+
+# Test runner settings (Java 21 + Maven)
+test_command: "mvn test --batch-mode -Dspring.profiles.active=test"
+test_timeout_minutes: 15
+java_version: "21"
+
+# OpenAI model to use for all agents
+openai_model: "gpt-4o"
+
+# Paths that trigger automatic escalation if touched.
+# Uses prefix matching against repo-relative file paths.
+# Update these to match your actual package structure.
+sensitive_paths:
+  - "src/main/java/com/example/demo/security/"
+  - "src/main/java/com/example/demo/auth/"
+  - "src/main/java/com/example/demo/payment/"
+  - "src/main/resources/application.properties"
+  - "src/main/resources/application-prod.properties"
+  - ".github/workflows/"
+  - "Dockerfile"
+  - "pom.xml"
+
+# GitHub team or user to request review from when:
+#   - diff exceeds diff_size_threshold_lines, OR
+#   - a sensitive path is touched.
+# Format: "@your-org/team-slug" or "@username"
+senior_reviewer: "@nikhishats7"
