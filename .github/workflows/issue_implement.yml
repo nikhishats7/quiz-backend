@@ -76,6 +76,12 @@ jobs:
           token: ${{ steps.app_token.outputs.token }}
           fetch-depth: 0
 
+      # 3. Checkout THIS orchestrator repo (so we have the scripts)
+      - name: Checkout orchestrator scripts
+        uses: actions/checkout@v4
+        with:
+          path: _orchestrator
+
       # 4. Set up Python
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -85,13 +91,13 @@ jobs:
 
       # 5. Install dependencies
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r _orchestrator/requirements.txt
 
       # 6. Run orchestrator
       - name: Run orchestrator
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
@@ -100,4 +106,4 @@ jobs:
           REPO_OWNER: nikhishats7
           REPO_NAME: quiz-backend
           ORCHESTRATOR_REPO: ${{ github.repository }}
-        run: python .github/scripts/orchestrator.py
+        run: python _orchestrator/.github/scripts/orchestrator.py
