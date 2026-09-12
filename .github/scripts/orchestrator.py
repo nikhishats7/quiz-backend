@@ -46,7 +46,7 @@ def load_config() -> dict:
 # ── Environment ────────────────────────────────────────────────────────────────
 
 TOKEN           = os.environ["GITHUB_TOKEN"]
-OPENAI_API_KEY  = os.environ["OPENAI_API_KEY"]   # consumed by openai library directly
+GEMINI_API_KEY  = os.environ["GEMINI_API_KEY"]   # consumed by openai library directly
 ISSUE_NUMBER    = int(os.environ["ISSUE_NUMBER"])
 ISSUE_TITLE     = os.environ.get("ISSUE_TITLE", "")
 ISSUE_BODY      = os.environ.get("ISSUE_BODY", "")
