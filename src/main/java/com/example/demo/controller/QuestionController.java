@@ -27,12 +27,6 @@ public class QuestionController {
 	@Autowired
 	QuestionService qservice;
 	
-	/**
-	 * Adds a new question.
-	 * 
-	 * @param ques the question to add
-	 * @return the added question
-	 */
 	@PostMapping("/addquestion")
 	public Question addques(@RequestBody Question ques) {
 		qservice.addques(ques);
