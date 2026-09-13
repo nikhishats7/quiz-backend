@@ -64,7 +64,7 @@ public class QuestionService {
 	}
 
 	/**
-	 * Retrieves questions by difficulty level.
+	 * Retrieve questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
 	 * @return list of questions matching the difficulty level

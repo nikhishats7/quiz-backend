@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -20,32 +19,35 @@ import com.example.demo.model.Question;
 @ExtendWith(MockitoExtension.class)
 public class QuestionServiceTest {
 
-	@Mock
-	private QuestionRepo questionRepo;
+    @Mock
+    private QuestionRepo questionRepo;
 
-	@InjectMocks
-	private QuestionService questionService;
+    @InjectMocks
+    private QuestionService questionService;
 
-	@Test
-	public void testGetquesByDiffLevel() {
-		Question q = new Question();
-		q.setId(1);
-		q.setDiffLevel("Medium");
+    @Test
+    public void testGetquesByDiffLevel_Success() {
+        Question q = new Question();
+        q.setId(1);
+        q.setDiffLevel("Easy");
+        when(questionRepo.findByDiffLevel("Easy")).thenReturn(Arrays.asList(q));
 
-		when(questionRepo.findByDiffLevel("Medium")).thenReturn(Arrays.asList(q));
+        List<Question> result = questionService.getquesByDiffLevel("Easy");
+        assertEquals(1, result.size());
+        assertEquals("Easy", result.get(0).getDiffLevel());
+    }
 
-		List<Question> result = questionService.getquesByDiffLevel("Medium");
-		assertEquals(1, result.size());
-		assertEquals("Medium", result.get(0).getDiffLevel());
-	}
+    @Test
+    public void testGetquesByDiffLevel_NotFound() {
+        when(questionRepo.findByDiffLevel("NonExistent")).thenReturn(Collections.emptyList());
 
-	@Test
-	public void testGetquesByDiffLevelNullOrEmpty() {
-		List<Question> resultNull = questionService.getquesByDiffLevel(null);
-		assertTrue(resultNull.isEmpty());
+        List<Question> result = questionService.getquesByDiffLevel("NonExistent");
+        assertEquals(0, result.size());
+    }
 
-		when(questionRepo.findByDiffLevel("NonExistent")).thenReturn(Collections.emptyList());
-		List<Question> resultEmpty = questionService.getquesByDiffLevel("NonExistent");
-		assertTrue(resultEmpty.isEmpty());
-	}
+    @Test
+    public void testGetquesByDiffLevel_Null() {
+        List<Question> result = questionService.getquesByDiffLevel(null);
+        assertEquals(0, result.size());
+    }
 }
