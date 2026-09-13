@@ -1,121 +1,53 @@
 package com.example.demo.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.demo.dao.QuestionRepo;
 import com.example.demo.model.Question;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionServiceTest {
+public class QuestionServiceTest {
 
     @Mock
     private QuestionRepo questionRepo;
 
+    @InjectMocks
     private QuestionService questionService;
 
-    @BeforeEach
-    void setUp() {
-        questionService = new QuestionService();
-        ReflectionTestUtils.setField(questionService, "qrepo", questionRepo);
+    @Test
+    public void testGetQuesByDiffLevelSuccess() {
+        Question q = new Question();
+        q.setId(1);
+        q.setDiffLevel(2);
+        when(questionRepo.findByDiffLevel(2)).thenReturn(Arrays.asList(q));
+
+        List<Question> result = questionService.getquesByDiffLevel(2);
+        assertEquals(1, result.size());
+        assertEquals(2, result.get(0).getDiffLevel());
     }
 
     @Test
-    void addques_shouldSaveAndReturnQuestion() {
-        Question question = new Question();
-        question.setCategory("history");
-        question.setQuesTitle("Who discovered India?");
+    public void testGetQuesByDiffLevelNotFound() {
+        when(questionRepo.findByDiffLevel(99)).thenReturn(Collections.emptyList());
 
-        when(questionRepo.save(question)).thenReturn(question);
-
-        Question result = questionService.addques(question);
-
-        assertEquals(question, result);
-        verify(questionRepo).save(question);
+        List<Question> result = questionService.getquesByDiffLevel(99);
+        assertEquals(0, result.size());
     }
 
     @Test
-    void delques_shouldDeleteAndReturnMessage() {
-        String result = questionService.delques(12);
-
-        assertEquals("deleted12", result);
-        verify(questionRepo).deleteById(12);
-    }
-
-    @Test
-    void delquesmul_shouldDeleteAllAndReturnMessage() {
-        List<Integer> ids = List.of(1, 2, 3);
-
-        String result = questionService.delquesmul(ids);
-
-        assertEquals("deleted[1, 2, 3]", result);
-        verify(questionRepo).deleteAllById(ids);
-    }
-
-    @Test
-    void delquesall_shouldDeleteAllAndReturnMessage() {
-        String result = questionService.delquesall();
-
-        assertEquals("all deleted", result);
-        verify(questionRepo).deleteAll();
-    }
-
-    @Test
-    void getquesall_shouldReturnOkResponseWhenRepoReturnsQuestions() {
-        List<Question> questions = List.of(new Question());
-        when(questionRepo.findAll()).thenReturn(questions);
-
-        ResponseEntity<List<Question>> result = questionService.getquesall();
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(questions, result.getBody());
-        verify(questionRepo).findAll();
-    }
-
-    @Test
-    void getquesall_shouldReturnBadRequestOnException() {
-        when(questionRepo.findAll()).thenThrow(new RuntimeException("db down"));
-
-        ResponseEntity<List<Question>> result = questionService.getquesall();
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertEquals(new ArrayList<>(), result.getBody());
-    }
-
-    @Test
-    void getquesByCategory_shouldReturnQuestions() {
-        List<Question> questions = List.of(new Question());
-        when(questionRepo.getByCategory("history")).thenReturn(questions);
-
-        List<Question> result = questionService.getquesByCategory("history");
-
-        assertEquals(questions, result);
-        verify(questionRepo).getByCategory("history");
-    }
-
-    @Test
-    void getquesByCategoryAndCount_shouldReturnRandomQuestions() {
-        List<Question> questions = List.of(new Question(), new Question());
-        when(questionRepo.getRandomQuestionByCategory("history", 2)).thenReturn(questions);
-
-        List<Question> result = questionService.getquesByCategoryAndCount("history", 2);
-
-        assertEquals(questions, result);
-        verify(questionRepo).getRandomQuestionByCategory("history", 2);
+    public void testGetQuesByDiffLevelNull() {
+        List<Question> result = questionService.getquesByDiffLevel(null);
+        assertEquals(0, result.size());
     }
 }

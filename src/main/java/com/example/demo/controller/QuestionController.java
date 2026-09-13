@@ -70,4 +70,15 @@ public class QuestionController {
 		return qservice.getquesByCategoryAndCount(category,count);
 	}
 
+	/**
+	 * Retrieve questions by difficulty level.
+	 * 
+	 * @param diffLevel the difficulty level
+	 * @return list of questions matching the difficulty level
+	 */
+	@GetMapping("/question/{diffLevel}")
+	public List<Question> getquesByDiffLevel(@PathVariable("diffLevel") Integer diffLevel) {
+		return qservice.getquesByDiffLevel(diffLevel);
+	}
+
 }

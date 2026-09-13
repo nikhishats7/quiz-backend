@@ -20,4 +20,6 @@ public interface QuestionRepo extends JpaRepository<Question, Integer>{
 	List<Question> getRandomQuestionByCategory(String category,Integer qnum);
 	//or
 	List<Question> findByCategory(String category, Pageable pageable);
+
+	List<Question> findByDiffLevel(Integer diffLevel);
 }
