@@ -209,6 +209,18 @@ class GitHubClient:
         )
         r.raise_for_status()
         return r.json()
+    
+    def update_pr_body(
+            self, pr_number: int, 
+            body: str
+        ) -> dict:
+            r = self._session.patch(
+                f"{BASE}/repos/{self.owner}/{self.repo}/pulls/{pr_number}",
+                json={"body": body},
+                timeout=TIMEOUT,
+            )
+            r.raise_for_status()
+            return r.json()
 
     def ensure_label(self, label_name: str, color: str = "0075ca") -> None:
         """Create label if it doesn't exist."""

@@ -16,6 +16,15 @@ from utils.logger import log_stage_start, log_stage_end
 _AI_LABEL = "ai-generated"
 _AI_LABEL_COLOR = "7057ff"  # Purple
 
+def get_open_pr_for_branch(self, branch: str) -> dict | None:
+    r = self._session.get(
+        f"https://api.github.com/repos/{self.owner}/{self.repo}/pulls",
+        params={"head": f"{self.owner}:{branch}", "state": "open"},
+        timeout=30,
+    )
+    r.raise_for_status()
+    prs = r.json()
+    return prs[0] if prs else None
 
 def run(
     gh: GitHubClient,
@@ -27,54 +36,50 @@ def run(
     sensitive_paths_touched: list[str],
     senior_reviewer: str,
 ) -> int:
-    """
-    Open a draft PR and post a summary comment on the issue.
-    Returns the PR number.
-    """
     log_stage_start(
         stage="pr",
         issue_number=issue_number,
         attempt=0,
-        inputs={
-            "branch": implement_output.branch_name,
-            "diff_lines": implement_output.diff_size_lines,
-        },
+        inputs={"branch": implement_output.branch_name, "diff_lines": implement_output.diff_size_lines},
     )
 
-    # 1. Build PR body
     pr_body = _build_pr_body(issue_number, plan, implement_output, test_output)
 
-    # 2. Create draft PR
-    pr = gh.create_draft_pr(
-        title=f"feat(ai): implement issue #{issue_number}",
-        body=pr_body,
-        head_branch=implement_output.branch_name,
-        base_branch="main",
-    )
-    pr_number = pr["number"]
-    pr_url = pr["html_url"]
+    existing_pr = gh.get_open_pr_for_branch(implement_output.branch_name)
 
-    # 3. Apply ai-generated label
-    gh.ensure_label(_AI_LABEL, _AI_LABEL_COLOR)
-    gh.add_labels_to_pr(pr_number, [_AI_LABEL])
+    if existing_pr:
+        # /retry path: branch already has an open PR — update it, don't recreate it.
+        pr_number = existing_pr["number"]
+        pr_url = existing_pr["html_url"]
+        gh.update_pr_body(pr_number, pr_body)
+    else:
+        # First pass: no PR for this branch yet.
+        pr = gh.create_draft_pr(
+            title=f"feat(ai): implement issue #{issue_number}",
+            body=pr_body,
+            head_branch=implement_output.branch_name,
+            base_branch="main",
+        )
+        pr_number = pr["number"]
+        pr_url = pr["html_url"]
+        gh.ensure_label(_AI_LABEL, _AI_LABEL_COLOR)
+        gh.add_labels_to_pr(pr_number, [_AI_LABEL])
 
-    # 4. Request senior review if diff is large OR sensitive paths touched
-    needs_senior_review = (
-        implement_output.diff_size_lines > diff_size_threshold
-        or bool(sensitive_paths_touched)
-    )
-    if needs_senior_review and senior_reviewer:
-        gh.request_pr_reviewers(pr_number, [senior_reviewer])
+        needs_senior_review = (
+            implement_output.diff_size_lines > diff_size_threshold
+            or bool(sensitive_paths_touched)
+        )
+        if needs_senior_review and senior_reviewer:
+            gh.request_pr_reviewers(pr_number, [senior_reviewer])
 
-    # 5. Post summary comment on the original issue
-    issue_comment = _build_issue_comment(pr_url, implement_output, test_output)
+    issue_comment = _build_issue_comment(pr_url, implement_output, test_output, is_update=bool(existing_pr))
     gh.post_issue_comment(issue_number, issue_comment)
 
     log_stage_end(
         stage="pr",
         issue_number=issue_number,
         attempt=0,
-        outputs={"pr_number": pr_number, "pr_url": pr_url},
+        outputs={"pr_number": pr_number, "pr_url": pr_url, "updated_existing": bool(existing_pr)},
     )
 
     return pr_number
@@ -155,13 +160,27 @@ def _build_issue_comment(
     pr_url: str,
     implement: ImplementOutput,
     test: TestOutput,
+    is_update: bool = False,
 ) -> str:
     test_status = "✅ passing" if test.passed else f"⚠️ {test.tests_failed} failure(s)"
-    return textwrap.dedent(f"""
-    🤖 **AI Implementation Ready for Review**
 
-    I've analyzed this issue, created an implementation plan, written the code,
-    and verified it against the test suite.
+    if is_update:
+        header = textwrap.dedent(f"""
+        🤖 **AI Implementation Updated**
+
+        I've revised the implementation based on your feedback and pushed the changes
+        to the same PR.
+        """).strip()
+    else:
+        header = textwrap.dedent(f"""
+        🤖 **AI Implementation Ready for Review**
+
+        I've analyzed this issue, created an implementation plan, written the code,
+        and verified it against the test suite.
+        """).strip()
+
+    return textwrap.dedent(f"""
+    {header}
 
     **Draft PR:** {pr_url}
     **Branch:** `{implement.branch_name}`
