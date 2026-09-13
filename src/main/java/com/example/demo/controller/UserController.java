@@ -48,6 +48,13 @@ public class UserController {
 		return userservice.getTopscorers();
 	}
 	
-	
-
+	/**
+	 * Exposes an endpoint to retrieve the user(s) with the second highest score.
+	 * 
+	 * @return ResponseEntity containing a list of TopscoreWrapper representing the second top scorer(s).
+	 */
+	@GetMapping("/getSecondTopScorer")
+	public ResponseEntity<List<TopscoreWrapper>> getSecondTopScorer() {
+		return userservice.getSecondTopScorer();
+	}
 }

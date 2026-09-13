@@ -122,7 +122,7 @@ class UserServiceTest {
         user.setHighscore(250);
         when(userRepo.findByUsername("alice")).thenReturn(user);
 
-        ResponseEntity<String> result = userService.updatescore("alice", 200);
+        ResponseEntity<String> result = userService.updatescore("alice", 100);
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals("score updated", result.getBody());
@@ -130,19 +130,24 @@ class UserServiceTest {
     }
 
     @Test
-    void getTopscorers_shouldReturnTopPlayers() {
-        List<Integer> scores = List.of(500, 300);
-        TopscoreWrapper first = new TopscoreWrapper("alice", 500);
-        TopscoreWrapper second = new TopscoreWrapper("bob", 300);
-        when(userRepo.getTopscores(2)).thenReturn(scores);
-        when(userRepo.getUsersWithScores(scores)).thenReturn(List.of(first, second));
+    void getSecondTopScorer_shouldReturnSecondTopScorerWhenAvailable() {
+        when(userRepo.getTopscores(2)).thenReturn(List.of(500, 300));
+        TopscoreWrapper wrapper = new TopscoreWrapper("bob", 300);
+        when(userRepo.getUsersWithScores(List.of(300))).thenReturn(List.of(wrapper));
 
-        ResponseEntity<List<TopscoreWrapper>> result = userService.getTopscorers();
+        ResponseEntity<List<TopscoreWrapper>> result = userService.getSecondTopScorer();
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(2, result.getBody().size());
-        assertEquals("alice", result.getBody().get(0).getUsername());
-        verify(userRepo).getTopscores(2);
-        verify(userRepo).getUsersWithScores(scores);
+        assertEquals(1, result.getBody().size());
+        assertEquals("bob", result.getBody().get(0).getUsername());
+    }
+
+    @Test
+    void getSecondTopScorer_shouldReturnNotFoundWhenFewerThanTwoScoresExist() {
+        when(userRepo.getTopscores(2)).thenReturn(List.of(500));
+
+        ResponseEntity<List<TopscoreWrapper>> result = userService.getSecondTopScorer();
+
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
     }
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +53,22 @@ public class UserService {
 		List<TopscoreWrapper> usernames = userrepo.getUsersWithScores(top2scores);
 		return ResponseEntity.status(HttpStatus.OK).body(usernames);
 	}
-	
 
+	/**
+	 * Retrieves users who achieved the second highest score.
+	 * 
+	 * @return ResponseEntity containing a list of TopscoreWrapper for the second top scorer(s), or NOT_FOUND if fewer than 2 scores exist.
+	 */
+	public ResponseEntity<List<TopscoreWrapper>> getSecondTopScorer() {
+		List<Integer> topScores = userrepo.getTopscores(2);
+		
+		if (topScores == null || topScores.size() < 2) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
+		
+		Integer secondHighestScore = topScores.get(1);
+		List<TopscoreWrapper> secondTopUsers = userrepo.getUsersWithScores(List.of(secondHighestScore));
+		
+		return ResponseEntity.ok(secondTopUsers);
+	}
 }
