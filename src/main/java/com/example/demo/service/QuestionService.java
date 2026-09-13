@@ -63,4 +63,17 @@ public class QuestionService {
 		return qrepo.getRandomQuestionByCategory(category, count);
 	}
 
+	/**
+	 * Retrieves questions by difficulty level.
+	 * 
+	 * @param diffLevel the difficulty level
+	 * @return list of questions matching the difficulty level
+	 */
+	public List<Question> getquesByDiffLevel(String diffLevel) {
+		if (diffLevel == null) {
+			return new ArrayList<>();
+		}
+		return qrepo.findByDiffLevel(diffLevel);
+	}
+
 }
