@@ -30,21 +30,21 @@ public class QuestionControllerTest {
     public void testGetquesByDiffLevel() throws Exception {
         Question q = new Question();
         q.setId(1);
-        q.setDiffLevel("Medium");
+        q.setDiffLevel(1);
 
-        when(questionService.getquesByDiffLevel("Medium")).thenReturn(Arrays.asList(q));
+        when(questionService.getquesByDiffLevel(1)).thenReturn(Arrays.asList(q));
 
-        mockMvc.perform(get("/question/Medium"))
+        mockMvc.perform(get("/question/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].diffLevel").value("Medium"));
+                .andExpect(jsonPath("$[0].diffLevel").value(1));
     }
 
     @Test
-    public void testGetquesByDiffLevel_Empty() throws Exception {
-        when(questionService.getquesByDiffLevel("Hard")).thenReturn(Collections.emptyList());
+    public void testGetquesByDiffLevelNotFound() throws Exception {
+        when(questionService.getquesByDiffLevel(5)).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/question/Hard"))
+        mockMvc.perform(get("/question/5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());

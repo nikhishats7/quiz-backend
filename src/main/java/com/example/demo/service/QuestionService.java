@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,14 +65,14 @@ public class QuestionService {
 	}
 
 	/**
-	 * Retrieve questions by difficulty level.
+	 * Retrieves questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
 	 * @return list of questions matching the difficulty level
 	 */
-	public List<Question> getquesByDiffLevel(String diffLevel) {
+	public List<Question> getquesByDiffLevel(Integer diffLevel) {
 		if (diffLevel == null) {
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 		return qrepo.findByDiffLevel(diffLevel);
 	}
