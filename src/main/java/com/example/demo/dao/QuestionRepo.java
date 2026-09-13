@@ -1,6 +1,5 @@
 package com.example.demo.dao;
 
-
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -9,8 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.model.Question;
-
-
 
 @Repository
 public interface QuestionRepo extends JpaRepository<Question, Integer>{
@@ -21,11 +18,5 @@ public interface QuestionRepo extends JpaRepository<Question, Integer>{
 	//or
 	List<Question> findByCategory(String category, Pageable pageable);
 
-	/**
-	 * Find questions by difficulty level.
-	 * 
-	 * @param diffLevel the difficulty level
-	 * @return list of matching questions
-	 */
-	List<Question> findByDiffLevel(String diffLevel);
+	List<Question> findByDiffLevel(Integer diffLevel);
 }

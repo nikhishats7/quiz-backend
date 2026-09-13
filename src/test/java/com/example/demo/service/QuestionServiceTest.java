@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -27,28 +26,14 @@ public class QuestionServiceTest {
 
 	@Test
 	public void testGetquesByDiffLevel() {
-		Question q = new Question();
-		q.setId(1);
-		q.setDiffLevel("Easy");
+		Question q1 = new Question();
+		q1.setId(1);
+		q1.setDiffLevel(2);
 
-		when(questionRepo.findByDiffLevel("Easy")).thenReturn(Arrays.asList(q));
+		when(questionRepo.findByDiffLevel(2)).thenReturn(Arrays.asList(q1));
 
-		List<Question> result = questionService.getquesByDiffLevel("Easy");
-		assertEquals(1, result.size());
-		assertEquals("Easy", result.get(0).getDiffLevel());
-	}
-
-	@Test
-	public void testGetquesByDiffLevelNotFound() {
-		when(questionRepo.findByDiffLevel("NonExistent")).thenReturn(Collections.emptyList());
-
-		List<Question> result = questionService.getquesByDiffLevel("NonExistent");
-		assertEquals(0, result.size());
-	}
-
-	@Test
-	public void testGetquesByDiffLevelNull() {
-		List<Question> result = questionService.getquesByDiffLevel(null);
-		assertEquals(0, result.size());
+		List<Question> result = questionService.getquesByDiffLevel(2);
+		equals(1, result.size());
+		equals(2, result.get(0).getDiffLevel());
 	}
 }

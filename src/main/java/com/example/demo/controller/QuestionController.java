@@ -15,13 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RestController
 @CrossOrigin
-//@RequestMapping("/questions")
 public class QuestionController {
 	
 	@Autowired
@@ -71,13 +68,13 @@ public class QuestionController {
 	}
 
 	/**
-	 * Retrieve questions by difficulty level.
+	 * Retrieves questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
-	 * @return list of matching questions
+	 * @return list of questions matching the difficulty level
 	 */
 	@GetMapping("/question/{diffLevel}")
-	public List<Question> getquesByDiffLevel(@PathVariable("diffLevel") String diffLevel) {
+	public List<Question> getquesByDiffLevel(@PathVariable("diffLevel") Integer diffLevel) {
 		return qservice.getquesByDiffLevel(diffLevel);
 	}
 
