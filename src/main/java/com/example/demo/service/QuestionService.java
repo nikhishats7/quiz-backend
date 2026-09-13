@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -58,11 +59,12 @@ public class QuestionService {
 	}
 
 	public List<Question> getquesByCategoryAndCount(String category, Integer count) {
+//		return qrepo.findByCategory(category, PageRequest.of(0, count)); //or
 		return qrepo.getRandomQuestionByCategory(category, count);
 	}
 
 	/**
-	 * Retrieves questions by difficulty level.
+	 * Retrieve questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
 	 * @return list of questions matching the difficulty level
