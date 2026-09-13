@@ -13,9 +13,9 @@ import com.example.demo.model.User;
 public interface UserRepo extends JpaRepository<User, Integer>{
 	User findByUsername(String username);
 	
-	@Query(value = "SELECT DISTINCT highscore FROM User ORDER BY highscore DESC LIMIT :count",nativeQuery = true)
+	@Query(value = "SELECT DISTINCT highscore FROM app_user ORDER BY highscore DESC LIMIT :count",nativeQuery = true)
 	List<Integer> getTopscores(Integer count);
 	
-	@Query(value = "SELECT username,highscore FROM User WHERE highscore IN :scores ORDER BY highscore DESC",nativeQuery = true)
+	@Query(value = "SELECT username,highscore FROM app_user WHERE highscore IN :scores ORDER BY highscore DESC",nativeQuery = true)
 	List<TopscoreWrapper> getUsersWithScores(List<Integer> scores);
 }
