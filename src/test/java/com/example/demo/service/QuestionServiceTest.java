@@ -26,28 +26,27 @@ public class QuestionServiceTest {
     private QuestionService questionService;
 
     @Test
-    public void testGetquesByDiffLevel() {
+    public void testGetquesByDiffLevel_Success() {
         Question q = new Question();
         q.setId(1);
-        q.setDiffLevel(2);
+        q.setDiffLevel("Easy");
+        when(questionRepo.findByDiffLevel("Easy")).thenReturn(Arrays.asList(q));
 
-        when(questionRepo.findByDiffLevel(2)).thenReturn(Arrays.asList(q));
-
-        List<Question> result = questionService.getquesByDiffLevel(2);
+        List<Question> result = questionService.getquesByDiffLevel("Easy");
         assertEquals(1, result.size());
-        assertEquals(2, result.get(0).getDiffLevel());
+        assertEquals("Easy", result.get(0).getDiffLevel());
     }
 
     @Test
-    public void testGetquesByDiffLevelNotFound() {
-        when(questionRepo.findByDiffLevel(99)).thenReturn(Collections.emptyList());
+    public void testGetquesByDiffLevel_NotFound() {
+        when(questionRepo.findByDiffLevel("NonExistent")).thenReturn(Collections.emptyList());
 
-        List<Question> result = questionService.getquesByDiffLevel(99);
+        List<Question> result = questionService.getquesByDiffLevel("NonExistent");
         assertEquals(0, result.size());
     }
 
     @Test
-    public void testGetquesByDiffLevelNull() {
+    public void testGetquesByDiffLevel_Null() {
         List<Question> result = questionService.getquesByDiffLevel(null);
         assertEquals(0, result.size());
     }
