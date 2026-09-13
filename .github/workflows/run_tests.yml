@@ -103,3 +103,9 @@ jobs:
             echo "passed=false" >> $GITHUB_OUTPUT
           fi
           echo "log_artifact_url=${{ steps.upload.outputs.artifact-url }}" >> $GITHUB_OUTPUT
+
+      - name: Fail the run if tests did not pass
+        if: steps.result.outputs.passed != 'true'
+        run: |
+          echo "::error::Maven build/tests failed — failing this run so the caller sees it."
+          exit 1

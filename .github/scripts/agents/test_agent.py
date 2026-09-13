@@ -7,6 +7,7 @@ Output : TestOutput (JSON)
 
 from __future__ import annotations
 import os
+import zipfile, io
 
 from schemas.implement_output import ImplementOutput
 from schemas.test_output import TestOutput
@@ -74,6 +75,10 @@ def run(
     for art in artifacts:
         if "test-logs" in art["name"]:
             log_url = art["archive_download_url"]
+            zip_resp = gh._session.get(log_url, timeout=30)
+            with zipfile.ZipFile(io.BytesIO(zip_resp.content)) as zf:
+                if "test-output.log" in zf.namelist():
+                    raw_log_excerpt = zf.read("test-output.log").decode("utf-8", errors="replace")[-4000:]
             break
 
     # 4. Parse counts from run outputs (exposed via run_tests.yml outputs)
