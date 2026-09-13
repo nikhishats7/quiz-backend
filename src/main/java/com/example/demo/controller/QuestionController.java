@@ -74,7 +74,7 @@ public class QuestionController {
 	 * Retrieve questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
-	 * @return list of questions matching the difficulty level
+	 * @return list of matching questions
 	 */
 	@GetMapping("/question/{diffLevel}")
 	public List<Question> getquesByDiffLevel(@PathVariable("diffLevel") String diffLevel) {

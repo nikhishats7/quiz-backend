@@ -25,7 +25,7 @@ public interface QuestionRepo extends JpaRepository<Question, Integer>{
 	 * Find questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
-	 * @return list of questions matching the difficulty level
+	 * @return list of matching questions
 	 */
 	List<Question> findByDiffLevel(String diffLevel);
 }

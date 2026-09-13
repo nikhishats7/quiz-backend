@@ -19,35 +19,36 @@ import com.example.demo.model.Question;
 @ExtendWith(MockitoExtension.class)
 public class QuestionServiceTest {
 
-    @Mock
-    private QuestionRepo questionRepo;
+	@Mock
+	private QuestionRepo questionRepo;
 
-    @InjectMocks
-    private QuestionService questionService;
+	@InjectMocks
+	private QuestionService questionService;
 
-    @Test
-    public void testGetquesByDiffLevel_Success() {
-        Question q = new Question();
-        q.setId(1);
-        q.setDiffLevel("Easy");
-        when(questionRepo.findByDiffLevel("Easy")).thenReturn(Arrays.asList(q));
+	@Test
+	public void testGetquesByDiffLevel() {
+		Question q = new Question();
+		q.setId(1);
+		q.setDiffLevel("Easy");
 
-        List<Question> result = questionService.getquesByDiffLevel("Easy");
-        assertEquals(1, result.size());
-        assertEquals("Easy", result.get(0).getDiffLevel());
-    }
+		when(questionRepo.findByDiffLevel("Easy")).thenReturn(Arrays.asList(q));
 
-    @Test
-    public void testGetquesByDiffLevel_NotFound() {
-        when(questionRepo.findByDiffLevel("NonExistent")).thenReturn(Collections.emptyList());
+		List<Question> result = questionService.getquesByDiffLevel("Easy");
+		assertEquals(1, result.size());
+		assertEquals("Easy", result.get(0).getDiffLevel());
+	}
 
-        List<Question> result = questionService.getquesByDiffLevel("NonExistent");
-        assertEquals(0, result.size());
-    }
+	@Test
+	public void testGetquesByDiffLevelNotFound() {
+		when(questionRepo.findByDiffLevel("NonExistent")).thenReturn(Collections.emptyList());
 
-    @Test
-    public void testGetquesByDiffLevel_Null() {
-        List<Question> result = questionService.getquesByDiffLevel(null);
-        assertEquals(0, result.size());
-    }
+		List<Question> result = questionService.getquesByDiffLevel("NonExistent");
+		assertEquals(0, result.size());
+	}
+
+	@Test
+	public void testGetquesByDiffLevelNull() {
+		List<Question> result = questionService.getquesByDiffLevel(null);
+		assertEquals(0, result.size());
+	}
 }

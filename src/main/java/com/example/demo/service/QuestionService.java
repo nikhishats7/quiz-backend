@@ -67,7 +67,7 @@ public class QuestionService {
 	 * Retrieve questions by difficulty level.
 	 * 
 	 * @param diffLevel the difficulty level
-	 * @return list of questions matching the given difficulty level
+	 * @return list of questions matching the difficulty level
 	 */
 	public List<Question> getquesByDiffLevel(String diffLevel) {
 		if (diffLevel == null) {
