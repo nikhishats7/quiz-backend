@@ -16,16 +16,6 @@ from utils.logger import log_stage_start, log_stage_end
 _AI_LABEL = "ai-generated"
 _AI_LABEL_COLOR = "7057ff"  # Purple
 
-def get_open_pr_for_branch(self, branch: str) -> dict | None:
-    r = self._session.get(
-        f"https://api.github.com/repos/{self.owner}/{self.repo}/pulls",
-        params={"head": f"{self.owner}:{branch}", "state": "open"},
-        timeout=30,
-    )
-    r.raise_for_status()
-    prs = r.json()
-    return prs[0] if prs else None
-
 def run(
     gh: GitHubClient,
     issue_number: int,
