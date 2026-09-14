@@ -76,4 +76,17 @@ class UserControllerTest {
         assertEquals(expected, result);
         verify(userService).getTopscorers();
     }
+
+    @Test
+    void getSecondTopScorer_shouldReturnResponseFromService() {
+        TopscoreWrapper second = new TopscoreWrapper("bob", 300);
+        List<TopscoreWrapper> secondScores = List.of(second);
+        ResponseEntity<List<TopscoreWrapper>> expected = ResponseEntity.ok(secondScores);
+        when(userService.getSecondTopScorer()).thenReturn(expected);
+
+        ResponseEntity<List<TopscoreWrapper>> result = userController.getSecondTopScorer();
+
+        assertEquals(expected, result);
+        verify(userService).getSecondTopScorer();
+    }
 }
