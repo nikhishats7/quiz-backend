@@ -221,7 +221,17 @@ class GitHubClient:
             )
             r.raise_for_status()
             return r.json()
-
+    
+    def get_open_pr_for_branch(self, branch: str) -> dict | None:
+        r = self._session.get(
+            f"{BASE}/repos/{self.owner}/{self.repo}/pulls",
+            params={"head": f"{self.owner}:{branch}", "state": "open"},
+            timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        prs = r.json()
+        return prs[0] if prs else None
+    
     def ensure_label(self, label_name: str, color: str = "0075ca") -> None:
         """Create label if it doesn't exist."""
         r = self._session.post(
