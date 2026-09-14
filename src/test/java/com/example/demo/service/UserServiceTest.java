@@ -130,7 +130,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getSecondTopScorer_shouldReturnSecondTopScorerWhenAvailable() {
+    void getSecondTopScorer_shouldReturnSecondTopScorerWhenExists() {
         when(userRepo.getTopscores(2)).thenReturn(List.of(500, 300));
         TopscoreWrapper wrapper = new TopscoreWrapper("bob", 300);
         when(userRepo.getUsersWithScores(List.of(300))).thenReturn(List.of(wrapper));
@@ -143,7 +143,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getSecondTopScorer_shouldReturnNotFoundWhenFewerThanTwoScoresExist() {
+    void getSecondTopScorer_shouldReturnNotFoundWhenFewerThanTwoScores() {
         when(userRepo.getTopscores(2)).thenReturn(List.of(500));
 
         ResponseEntity<List<TopscoreWrapper>> result = userService.getSecondTopScorer();
