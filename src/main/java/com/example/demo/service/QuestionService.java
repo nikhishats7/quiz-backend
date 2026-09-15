@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,40 +20,41 @@ public class QuestionService {
 	@Autowired
 	QuestionRepo qrepo;
 	
+	@CacheEvict(cacheNames = {"allQuestions", "questionsByCategory"}, allEntries = true)
 	public Question addques(Question ques)
 	{
 		qrepo.save(ques);
 		return ques;
 	}
 	
+	@CacheEvict(cacheNames = {"allQuestions", "questionsByCategory"}, allEntries = true)
 	public String delques(int id)
 	{
 		qrepo.deleteById(id);;
 		return "deleted"+id;
 	}
 	
+	@CacheEvict(cacheNames = {"allQuestions", "questionsByCategory"}, allEntries = true)
 	public String delquesmul(List<Integer> ids)
 	{
 		qrepo.deleteAllById(ids);
 		return "deleted"+ids;
 	}
 	
+	@CacheEvict(cacheNames = {"allQuestions", "questionsByCategory"}, allEntries = true)
 	public String delquesall()
 	{
 		qrepo.deleteAll();
 		return "all deleted";
 	}
 	
-	public ResponseEntity<List<Question>> getquesall()
+	@Cacheable(cacheNames = "allQuestions")
+	public List<Question> getquesall()
 	{
-		try {
-			return new ResponseEntity<>(qrepo.findAll(),HttpStatus.OK); 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+		return qrepo.findAll();
 	}
 	
+	@Cacheable(cacheNames = "questionsByCategory", key = "#category")
 	public List<Question> getquesByCategory(String category)
 	{
 		return qrepo.getByCategory(category);
