@@ -80,10 +80,9 @@ class QuestionServiceTest {
         List<Question> questions = List.of(new Question());
         when(questionRepo.findAll()).thenReturn(questions);
 
-        ResponseEntity<List<Question>> result = questionService.getquesall();
+        List<Question> result = questionService.getquesall();
 
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(questions, result.getBody());
+        assertEquals(questions, result);
         verify(questionRepo).findAll();
     }
 
@@ -91,10 +90,9 @@ class QuestionServiceTest {
     void getquesall_shouldReturnBadRequestOnException() {
         when(questionRepo.findAll()).thenThrow(new RuntimeException("db down"));
 
-        ResponseEntity<List<Question>> result = questionService.getquesall();
+       List<Question> result = questionService.getquesall();
 
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertEquals(new ArrayList<>(), result.getBody());
+        assertEquals(new ArrayList<>(), result);
     }
 
     @Test

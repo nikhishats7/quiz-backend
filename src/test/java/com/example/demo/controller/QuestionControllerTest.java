@@ -74,7 +74,7 @@ class QuestionControllerTest {
     @Test
     void getquesall_shouldReturnResponseFromService() {
         List<Question> questions = List.of(new Question());
-        ResponseEntity<List<Question>> expected = ResponseEntity.ok(questions);
+        List<Question> expected = questions;
         when(questionService.getquesall()).thenReturn(expected);
 
         ResponseEntity<List<Question>> result = questionController.getquesall();

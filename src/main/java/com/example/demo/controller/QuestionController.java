@@ -55,7 +55,7 @@ public class QuestionController {
 	@GetMapping("/getquesall")
 	public ResponseEntity<List<Question>> getquesall()
 	{
-		return qservice.getquesall();
+		return  ResponseEntity.ok(qservice.getquesall());
 	}
 	
 	@GetMapping("/getquesByCategory/{category}")
