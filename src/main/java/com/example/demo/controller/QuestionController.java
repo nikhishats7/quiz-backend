@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Question;
+import com.example.demo.mq.MessageProducer;
 import com.example.demo.service.QuestionService;
 
 import java.util.List;
@@ -26,11 +27,14 @@ public class QuestionController {
 	
 	@Autowired
 	QuestionService qservice;
+
+	@Autowired
+    private MessageProducer messageProducer;
 	
 	@PostMapping("/addques")
 	public Question addques(@RequestBody Question ques) {
-		qservice.addques(ques);
-		
+		//qservice.addques(ques);
+		messageProducer.sendMessage(ques);
 		return ques;
 	}
 	
